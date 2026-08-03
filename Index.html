@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Mongolia Map🇲🇳</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css">
+
+
+<style>
+
+body {
+    margin:0;
+    font-family:Arial;
+}
+
+h1 {
+    text-align:center;
+    margin:8px;
+}
+
+#map {
+    height:90vh;
+    width:100%;
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+<h1>🇲🇳 Mongolia Explorer Map</h1>
+
+<div id="map"></div>
+
+
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+
+<script>
+
+
+// MAP
+
+let map = L.map("map").setView(
+    [46.8625,103.8467],
+    5
+);
+
+
+
+L.tileLayer(
+"https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+{
+    maxZoom:19,
+    attribution:"© OpenStreetMap"
+}
+).addTo(map);
+
+
+
+
+
+// SEARCH
+
+L.Control.geocoder({
+
+    placeholder:"Search place..."
+
+})
+
+.addTo(map);
+
+
+
+
+
+
+// LOAD SOUMS
+
+fetch("Maps.geojson")
+
+.then(response => response.json())
+
+.then(data => {
+
+
+let soums = L.geoJSON(data, {
+
+
+style: {
+
+    weight:1,
+
+    fillOpacity:0.15
+
+},
+
+
+
+onEachFeature:function(feature,layer){
+
+
+let name =
+feature.properties.name ||
+feature.properties.NAME_2 ||
+feature.properties.ADM2_EN ||
+"Unknown";
+
+
+layer.bindPopup(
+
+"<h3>🇲🇳 "+name+"</h3>"
+
+);
+
+
+
+layer.on({
+
+mouseover:function(){
+
+layer.setStyle({
+
+fillOpacity:0.5
+
+});
+
+},
+
+
+mouseout:function(){
+
+layer.setStyle({
+
+fillOpacity:0.15
+
+});
+
+}
+
+
+});
+
+
+}
+
+
+}).addTo(map);
+
+
+
+map.fitBounds(
+soums.getBounds()
+);
+
+
+})
+
+.catch(function(){
+
+alert(
+"Maps.geojson not found!"
+);
+
+});
+
+
+
+
+
+
+
+
+// CITIES
+
+
+let cities=[
+
+["Ulaanbaatar",47.8864,106.9057],
+
+["Erdenet",49.0278,104.0444],
+
+["Darkhan",49.4867,105.9228],
+
+["Kharkhorin",47.1974,102.8238],
+
+["Öndörshil",45.85,106.85]
+
+];
+
+
+
+cities.forEach(function(city){
+
+
+L.marker(
+[city[1],city[2]]
+)
+
+.addTo(map)
+
+.bindPopup(
+
+"📍 "+city[0]
+
+);
+
+
+});
+
+
+
+
+
+
+
+
+
+// GPS
+
+
+let gpsMarker;
+
+let gpsCircle;
+
+
+
+map.locate({
+
+watch:true,
+
+enableHighAccuracy:true
+
+});
+
+
+
+map.on(
+"locationfound",
+
+function(e){
+
+
+let latlng=e.latlng;
+
+
+
+if(gpsMarker){
+
+gpsMarker.setLatLng(latlng);
+
+gpsCircle.setLatLng(latlng);
+
+
+}
+
+else{
+
+
+gpsMarker=L.marker(latlng)
+
+.addTo(map)
+
+.bindPopup(
+"📍 You are here"
+);
+
+
+
+gpsCircle=L.circle(
+
+latlng,
+
+{
+
+radius:e.accuracy,
+
+}
+
+)
+
+.addTo(map);
+
+
+}
+
+
+
+map.setView(
+
+latlng,
+
+15
+
+);
+
+
+
+}
+
+);
+
+
+
+
+
+map.on(
+"locationerror",
+
+function(){
+
+alert(
+"GPS permission denied"
+);
+
+}
+
+);
+
+
+
+
+</script>
+
+
+</body>
+
+  </html>
